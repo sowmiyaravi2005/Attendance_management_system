@@ -1,0 +1,176 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Mini Attendance Management System API",
+    "version": "1.0.0",
+    "description": "Comprehensive RESTful API documentation for Twite AI Mini Attendance Management System.",
+    "contact": {
+      "name": "Twite AI Technologies Engineering Team",
+      "email": "support@twiteai.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "employee_code": { "type": "string", "example": "EMP001" },
+          "first_name": { "type": "string", "example": "Alex" },
+          "last_name": { "type": "string", "example": "Morgan" },
+          "email": { "type": "string", "example": "alex.morgan@twiteai.com" },
+          "phone": { "type": "string", "example": "+1 555-0101" },
+          "department": { "type": "string", "example": "Engineering" },
+          "designation": { "type": "string", "example": "Senior Full Stack Engineer" },
+          "status": { "type": "string", "enum": ["Active", "Inactive"], "example": "Active" },
+          "hire_date": { "type": "string", "format": "date", "example": "2023-01-15" }
+        }
+      },
+      "Attendance": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "employee_id": { "type": "integer", "example": 1 },
+          "attendance_date": { "type": "string", "format": "date", "example": "2026-09-06" },
+          "check_in_time": { "type": "string", "example": "09:00" },
+          "check_out_time": { "type": "string", "example": "17:30" },
+          "status": { "type": "string", "enum": ["Present", "Absent", "Late", "Half Day", "Leave"], "example": "Present" },
+          "notes": { "type": "string", "example": "On time" }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "summary": "User Login (Generates JWT Token)",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "admin" },
+                  "password": { "type": "string", "example": "admin123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful, returns JWT token and user profile" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/employees": {
+      "get": {
+        "summary": "Get all employees with pagination and filters",
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "department", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "List of employees returned" }
+        }
+      },
+      "post": {
+        "summary": "Create new employee",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Employee" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Employee created successfully" }
+        }
+      }
+    },
+    "/api/employees/{id}": {
+      "get": {
+        "summary": "Get employee by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Employee details" } }
+      },
+      "put": {
+        "summary": "Update employee details",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Employee" } } }
+        },
+        "responses": { "200": { "description": "Employee updated successfully" } }
+      },
+      "delete": {
+        "summary": "Delete employee",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Employee deleted" } }
+      }
+    },
+    "/api/attendance": {
+      "get": {
+        "summary": "Get attendance logs",
+        "parameters": [
+          { "name": "date", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "department", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }
+        ],
+        "responses": { "200": { "description": "Attendance logs" } }
+      },
+      "post": {
+        "summary": "Mark or update attendance",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Attendance" } } }
+        },
+        "responses": { "201": { "description": "Attendance marked successfully" } }
+      }
+    },
+    "/api/attendance/summary": {
+      "get": {
+        "summary": "Get attendance summary metrics",
+        "parameters": [{ "name": "date", "in": "query", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Summary metrics" } }
+      }
+    },
+    "/api/dashboard/stats": {
+      "get": {
+        "summary": "Get dashboard metrics and counts",
+        "responses": { "200": { "description": "Dashboard statistics" } }
+      }
+    },
+    "/api/reports/export-attendance": {
+      "get": {
+        "summary": "Export attendance report as CSV file",
+        "responses": { "200": { "description": "CSV stream download" } }
+      }
+    }
+  }
+}
